@@ -1,4 +1,14 @@
 import type { Feature } from "@/types/buildings";
+import { Search, MapPin, X } from "lucide-react";
+
+const categoryColors: Record<string, string> = {
+  faculty: "bg-blue-100 text-blue-700",
+  facility: "bg-emerald-100 text-emerald-700",
+  landmark: "bg-amber-100 text-amber-700",
+  department: "bg-purple-100 text-purple-700",
+  restaurant: "bg-rose-100 text-rose-700",
+  school: "bg-sky-100 text-sky-700",
+};
 
 interface SearchBarProps {
   query: string;
@@ -13,25 +23,59 @@ export default function SearchBar({
   onChange,
   onSelect,
 }: SearchBarProps) {
+  const showResults = results.length > 0;
+
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Search for a building..."
-        className="w-full px-4 py-2 rounded-xl shadow-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      {results.length > 0 && (
-        <ul className="mt-1 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[92%] max-w-lg">
+      {/* Input */}
+      <div
+        className={`flex items-center gap-3 bg-white px-4 py-3 shadow-xl border border-gray-100
+          ${showResults ? "rounded-t-2xl border-b-0" : "rounded-2xl"}`}
+      >
+        <Search size={16} className="text-gray-400 shrink-0" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Search buildings, faculties, facilities…"
+          className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 bg-transparent focus:outline-none"
+        />
+        {query && (
+          <button
+            onClick={() => onChange("")}
+            className="text-gray-300 hover:text-gray-500 transition-colors"
+          >
+            <X size={15} />
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown */}
+      {showResults && (
+        <ul className="bg-white border border-gray-100 border-t-0 rounded-b-2xl shadow-xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-gray-50">
           {results.map((f) => (
             <li
               key={f.properties.id}
               onClick={() => onSelect(f)}
-              className="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 border-b border-gray-50 last:border-0"
+              className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors group"
             >
-              <span className="font-medium">{f.properties.name}</span>
-              <span className="ml-2 text-xs text-gray-400 capitalize">
+              <div className="mt-0.5 text-gray-300 group-hover:text-blue-400 transition-colors shrink-0">
+                <MapPin size={15} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800 truncate">
+                  {f.properties.name}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
+                  {f.properties.description}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 mt-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${
+                  categoryColors[f.properties.category] ??
+                  "bg-gray-100 text-gray-500"
+                }`}
+              >
                 {f.properties.category}
               </span>
             </li>
