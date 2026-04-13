@@ -85,7 +85,7 @@ export default function MapComponent() {
         ref={mapRef}
         initialViewState={{ longitude: 3.201, latitude: 6.4666, zoom: 16 }}
         style={{ width: "100%", height: "100%" }}
-        mapStyle="mapbox://styles/mapbox/streets-v12"
+        mapStyle="mapbox://styles/mapbox/outdoors-v12"
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
       >
         <NavigationControl position="bottom-right" />
