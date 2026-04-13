@@ -1,5 +1,5 @@
 "use client";
-import Map, { Marker, Popup, NavigationControl } from "react-map-gl";
+import Map, { Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import buildings from "@/data/buildings.json";
 import { useState, useRef } from "react";
@@ -8,7 +8,7 @@ import CategoryFilter from "@/components/CategoryFilter";
 import BuildingPopup from "@/components/BuildingPopup";
 import LocateButton from "@/components/LocateButton";
 import type { Feature } from "@/types/buildings";
-import type { MapRef } from "react-map-gl";
+import type { MapRef } from "react-map-gl/mapbox";
 import { MapPin } from "lucide-react";
 
 type SelectedBuilding = Feature | null;
