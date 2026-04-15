@@ -1,5 +1,11 @@
 "use client";
-import Map, { Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
+import Map, {
+  Marker,
+  Popup,
+  NavigationControl,
+  Source,
+  Layer,
+} from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import buildings from "@/data/buildings.json";
 import { useState, useRef } from "react";
@@ -7,11 +13,22 @@ import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import BuildingPopup from "@/components/BuildingPopup";
 import LocateButton from "@/components/LocateButton";
+import DirectionsPanel from "@/components/DirectionsPanel";
 import type { Feature } from "@/types/buildings";
 import type { MapRef } from "react-map-gl/mapbox";
-import { MapPin } from "lucide-react";
+import type { LayerProps } from "react-map-gl/mapbox";
+import { MapPin, Navigation } from "lucide-react";
+import { getRoute } from "@/lib/directions";
+import type { RouteResult } from "@/lib/directions";
 
 type SelectedBuilding = Feature | null;
+
+const routeLayer: LayerProps = {
+  id: "route",
+  type: "line",
+  layout: { "line-join": "round", "line-cap": "round" },
+  paint: { "line-color": "#3b82f6", "line-width": 5, "line-opacity": 0.85 },
+};
 
 export default function MapComponent() {
   const mapRef = useRef<MapRef>(null);
@@ -22,6 +39,9 @@ export default function MapComponent() {
     null,
   );
   const [locating, setLocating] = useState(false);
+  const [showDirections, setShowDirections] = useState(false);
+  const [route, setRoute] = useState<RouteResult | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
 
   const visibleFeatures = buildings.features.filter((f) =>
     activeCategory === "all" ? true : f.properties.category === activeCategory,
@@ -42,7 +62,6 @@ export default function MapComponent() {
     setActiveCategory("all");
     setQuery("");
     flyTo(lng, lat);
-    // Slight delay so the map finishes flying before popup appears
     setTimeout(() => setSelected(feature), 1300);
   }
 
@@ -70,6 +89,43 @@ export default function MapComponent() {
     );
   }
 
+  async function handleGetDirections(origin: Feature, destination: Feature) {
+    setRouteLoading(true);
+    setRoute(null);
+
+    const originCoords: [number, number] = [
+      origin.geometry.coordinates[0],
+      origin.geometry.coordinates[1],
+    ];
+    const destCoords: [number, number] = [
+      destination.geometry.coordinates[0],
+      destination.geometry.coordinates[1],
+    ];
+
+    const result = await getRoute(
+      originCoords,
+      destCoords,
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN!,
+    );
+
+    setRoute(result);
+    setRouteLoading(false);
+
+    // Fit map to show the full route
+    if (result) {
+      const coords = result.geometry.coordinates as [number, number][];
+      const lngs = coords.map((c) => c[0]);
+      const lats = coords.map((c) => c[1]);
+      mapRef.current?.fitBounds(
+        [
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
+        ],
+        { padding: 80, duration: 1200 },
+      );
+    }
+  }
+
   return (
     <div className="relative h-full w-full">
       <SearchBar
@@ -81,16 +137,53 @@ export default function MapComponent() {
       <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
       <LocateButton loading={locating} onClick={handleLocate} />
 
+      {/* Directions toggle button */}
+      <button
+        onClick={() => {
+          setShowDirections((v) => !v);
+          setRoute(null);
+        }}
+        className="absolute bottom-20 right-16 z-[1000] bg-white hover:bg-gray-50
+          shadow-xl border border-gray-100 rounded-xl p-3 transition-all active:scale-95"
+        title="Directions"
+      >
+        <Navigation size={18} className="text-blue-500" />
+      </button>
+
+      {showDirections && (
+        <DirectionsPanel
+          buildings={buildings.features as Feature[]}
+          route={route}
+          loading={routeLoading}
+          onGetDirections={handleGetDirections}
+          onClose={() => {
+            setShowDirections(false);
+            setRoute(null);
+          }}
+        />
+      )}
+
       <Map
         ref={mapRef}
         initialViewState={{ longitude: 3.201, latitude: 6.4666, zoom: 16 }}
         style={{ width: "100%", height: "100%" }}
-        mapStyle="mapbox://styles/mapbox/outdoors-v12"
+        mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
       >
         <NavigationControl position="bottom-right" />
 
-        {/* User position dot */}
+        {/* Route line */}
+        {route && (
+          <Source
+            id="route"
+            type="geojson"
+            data={{ type: "Feature", geometry: route.geometry, properties: {} }}
+          >
+            <Layer {...routeLayer} />
+          </Source>
+        )}
+
+        {/* User position */}
         {userPosition && (
           <Marker
             longitude={userPosition[0]}
@@ -121,7 +214,7 @@ export default function MapComponent() {
           </Marker>
         ))}
 
-        {/* Single popup for selected building */}
+        {/* Popup */}
         {selected && (
           <Popup
             longitude={selected.geometry.coordinates[0]}
