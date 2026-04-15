@@ -13,23 +13,69 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LASU Navigate",
+  metadataBase: new URL("https://lasunav-sable.vercel.app"),
+
+  title: {
+    default: "LASU Navigate",
+    template: "%s | LASU Navigate",
+  },
+
   description:
-    "Interactive campus navigation map for Lagos State University. Find buildings, facilities and departments across the LASU Ojo campus.",
+    "LASU Navigate is an interactive campus navigation system designed to help students, staff, and visitors easily locate buildings, departments, and facilities within Lagos State University, Ojo.",
+
   keywords: [
-    "LASU",
-    "Lagos State University",
-    "campus map",
-    "navigation",
-    "Ojo",
+    "LASU navigation",
+    "Lagos State University map",
+    "LASU campus guide",
+    "LASU Ojo map",
+    "campus navigation app",
+    "student navigation system",
+    "LASU buildings and locations",
   ],
+
   authors: [{ name: "Roqeeb" }],
+  creator: "Roqeeb",
+  applicationName: "LASU Navigate",
+
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
+
   openGraph: {
-    title: "LASU Navigate",
+    title: "LASU Navigate – Smart Campus Navigation",
     description:
-      "Find any building or facility on the Lagos State University campus.",
+      "Easily explore Lagos State University with real-time navigation. Find lecture halls, faculties, offices, and key facilities across LASU Ojo campus.",
+    url: "https://lasunav-sable.vercel.app",
+    siteName: "LASU Navigate",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "LASU Navigate Campus Map",
+      },
+    ],
+    locale: "en_NG",
     type: "website",
   },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "LASU Navigate – Campus Navigation Made Easy",
+    description:
+      "Navigate Lagos State University effortlessly. Discover buildings, routes, and facilities in seconds.",
+    images: ["/og-image.png"],
+    creator: "Shafiriyu Roqeeb",
+  },
+
+  category: "education",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

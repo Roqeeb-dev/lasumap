@@ -137,17 +137,15 @@ export default function MapComponent() {
       <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
       <LocateButton loading={locating} onClick={handleLocate} />
 
-      {/* Directions toggle button */}
       <button
         onClick={() => {
           setShowDirections((v) => !v);
           setRoute(null);
         }}
-        className="absolute bottom-20 right-16 z-[1000] bg-white hover:bg-gray-50
-          shadow-xl border border-gray-100 rounded-xl p-3 transition-all active:scale-95"
         title="Directions"
+        className="absolute bottom-20 right-20 md:right-24 z-[1000] flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-white hover:bg-gray-50 border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
       >
-        <Navigation size={18} className="text-blue-500" />
+        <Navigation className="w-5 h-5 text-blue-500" />
       </button>
 
       {showDirections && (
