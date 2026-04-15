@@ -1,64 +1,47 @@
 "use client";
-import {
-  MapContainer,
-  TileLayer,
+import Map, {
   Marker,
   Popup,
-  useMap,
-  Circle,
-} from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L, { LatLngExpression } from "leaflet";
+  NavigationControl,
+  Source,
+  Layer,
+} from "react-map-gl/mapbox";
+import "mapbox-gl/dist/mapbox-gl.css";
 import buildings from "@/data/buildings.json";
 import { useState, useRef } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import BuildingPopup from "@/components/BuildingPopup";
 import LocateButton from "@/components/LocateButton";
+import DirectionsPanel from "@/components/DirectionsPanel";
 import type { Feature } from "@/types/buildings";
+import type { MapRef } from "react-map-gl/mapbox";
+import type { LayerProps } from "react-map-gl/mapbox";
+import { MapPin, Navigation } from "lucide-react";
+import { getRoute } from "@/lib/directions";
+import type { RouteResult } from "@/lib/directions";
 
-const defaultIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+type SelectedBuilding = Feature | null;
 
-// Blue dot icon for the user's position
-const userIcon = L.divIcon({
-  className: "",
-  html: `
-    <div style="
-      width: 18px; height: 18px;
-      background: #3b82f6;
-      border: 3px solid white;
-      border-radius: 50%;
-      box-shadow: 0 0 0 4px rgba(59,130,246,0.25);
-    "></div>
-  `,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
-
-function FlyToLocation({ target }: { target: LatLngExpression | null }) {
-  const map = useMap();
-  if (target) map.flyTo(target, 19, { duration: 1.2 });
-  return null;
-}
+const routeLayer: LayerProps = {
+  id: "route",
+  type: "line",
+  layout: { "line-join": "round", "line-cap": "round" },
+  paint: { "line-color": "#3b82f6", "line-width": 5, "line-opacity": 0.85 },
+};
 
 export default function MapComponent() {
+  const mapRef = useRef<MapRef>(null);
   const [query, setQuery] = useState("");
-  const [flyTarget, setFlyTarget] = useState<LatLngExpression | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [userPosition, setUserPosition] = useState<LatLngExpression | null>(
+  const [selected, setSelected] = useState<SelectedBuilding>(null);
+  const [userPosition, setUserPosition] = useState<[number, number] | null>(
     null,
   );
   const [locating, setLocating] = useState(false);
-  const markerRefs = useRef<Record<string, L.Marker>>({});
+  const [showDirections, setShowDirections] = useState(false);
+  const [route, setRoute] = useState<RouteResult | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
 
   const visibleFeatures = buildings.features.filter((f) =>
     activeCategory === "all" ? true : f.properties.category === activeCategory,
@@ -70,14 +53,16 @@ export default function MapComponent() {
       )
     : [];
 
+  function flyTo(lng: number, lat: number, zoom = 19) {
+    mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200 });
+  }
+
   function handleSelect(feature: Feature) {
     const [lng, lat] = feature.geometry.coordinates;
-    setFlyTarget([lat, lng]);
     setActiveCategory("all");
     setQuery("");
-    setTimeout(() => {
-      markerRefs.current[feature.properties.id]?.openPopup();
-    }, 1300);
+    flyTo(lng, lat);
+    setTimeout(() => setSelected(feature), 1300);
   }
 
   function handleLocate() {
@@ -85,14 +70,12 @@ export default function MapComponent() {
       alert("Geolocation is not supported by your browser.");
       return;
     }
-
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        const latlng: LatLngExpression = [latitude, longitude];
-        setUserPosition(latlng);
-        setFlyTarget(latlng);
+        setUserPosition([longitude, latitude]);
+        flyTo(longitude, latitude);
         setLocating(false);
       },
       (err) => {
@@ -106,6 +89,43 @@ export default function MapComponent() {
     );
   }
 
+  async function handleGetDirections(origin: Feature, destination: Feature) {
+    setRouteLoading(true);
+    setRoute(null);
+
+    const originCoords: [number, number] = [
+      origin.geometry.coordinates[0],
+      origin.geometry.coordinates[1],
+    ];
+    const destCoords: [number, number] = [
+      destination.geometry.coordinates[0],
+      destination.geometry.coordinates[1],
+    ];
+
+    const result = await getRoute(
+      originCoords,
+      destCoords,
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN!,
+    );
+
+    setRoute(result);
+    setRouteLoading(false);
+
+    // Fit map to show the full route
+    if (result) {
+      const coords = result.geometry.coordinates as [number, number][];
+      const lngs = coords.map((c) => c[0]);
+      const lats = coords.map((c) => c[1]);
+      mapRef.current?.fitBounds(
+        [
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
+        ],
+        { padding: 80, duration: 1200 },
+      );
+    }
+  }
+
   return (
     <div className="relative h-full w-full">
       <SearchBar
@@ -116,57 +136,103 @@ export default function MapComponent() {
       />
       <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
       <LocateButton loading={locating} onClick={handleLocate} />
-      <MapContainer
-        center={[6.4666, 3.201]}
-        zoom={16}
-        className="h-full w-full"
+
+      {/* Directions toggle button */}
+      <button
+        onClick={() => {
+          setShowDirections((v) => !v);
+          setRoute(null);
+        }}
+        className="absolute bottom-20 right-16 z-[1000] bg-white hover:bg-gray-50
+          shadow-xl border border-gray-100 rounded-xl p-3 transition-all active:scale-95"
+        title="Directions"
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <FlyToLocation target={flyTarget} />
+        <Navigation size={18} className="text-blue-500" />
+      </button>
+
+      {showDirections && (
+        <DirectionsPanel
+          buildings={buildings.features as Feature[]}
+          route={route}
+          loading={routeLoading}
+          onGetDirections={handleGetDirections}
+          onClose={() => {
+            setShowDirections(false);
+            setRoute(null);
+          }}
+        />
+      )}
+
+      <Map
+        ref={mapRef}
+        initialViewState={{ longitude: 3.201, latitude: 6.4666, zoom: 16 }}
+        style={{ width: "100%", height: "100%" }}
+        mapStyle="mapbox://styles/mapbox/streets-v12"
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+      >
+        <NavigationControl position="bottom-right" />
+
+        {/* Route line */}
+        {route && (
+          <Source
+            id="route"
+            type="geojson"
+            data={{ type: "Feature", geometry: route.geometry, properties: {} }}
+          >
+            <Layer {...routeLayer} />
+          </Source>
+        )}
 
         {/* User position */}
         {userPosition && (
-          <>
-            <Marker position={userPosition} icon={userIcon}>
-              <Popup>
-                <p className="text-sm font-medium text-gray-800">
-                  You are here
-                </p>
-              </Popup>
-            </Marker>
-            <Circle
-              center={userPosition}
-              radius={30}
-              pathOptions={{
-                color: "#3b82f6",
-                fillColor: "#3b82f6",
-                fillOpacity: 0.1,
-                weight: 1,
-              }}
-            />
-          </>
+          <Marker
+            longitude={userPosition[0]}
+            latitude={userPosition[1]}
+            anchor="center"
+          >
+            <div className="w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-lg ring-4 ring-blue-500/25" />
+          </Marker>
         )}
 
         {/* Building markers */}
         {visibleFeatures.map((f) => (
           <Marker
             key={f.properties.id}
-            position={[f.geometry.coordinates[1], f.geometry.coordinates[0]]}
-            icon={defaultIcon}
-            ref={(ref) => {
-              if (ref) markerRefs.current[f.properties.id] = ref;
+            longitude={f.geometry.coordinates[0]}
+            latitude={f.geometry.coordinates[1]}
+            anchor="bottom"
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              setSelected(f as Feature);
             }}
           >
-            <Popup>
-              <BuildingPopup
-                name={f.properties.name}
-                description={f.properties.description}
-                category={f.properties.category}
-              />
-            </Popup>
+            <MapPin
+              size={28}
+              className="text-blue-600 drop-shadow cursor-pointer hover:text-blue-800 hover:scale-110 transition-transform"
+              fill="white"
+            />
           </Marker>
         ))}
-      </MapContainer>
+
+        {/* Popup */}
+        {selected && (
+          <Popup
+            longitude={selected.geometry.coordinates[0]}
+            latitude={selected.geometry.coordinates[1]}
+            anchor="top"
+            offset={10}
+            onClose={() => setSelected(null)}
+            closeButton={true}
+            closeOnClick={false}
+          >
+            <BuildingPopup
+              name={selected.properties.name}
+              description={selected.properties.description}
+              category={selected.properties.category}
+            />
+          </Popup>
+        )}
+      </Map>
     </div>
   );
 }
