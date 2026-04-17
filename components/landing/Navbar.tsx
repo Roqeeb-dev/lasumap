@@ -19,6 +19,7 @@ export default function Navbar() {
       </div>
       <Link
         href="/map"
+        prefetch
         className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-400 transition-colors"
       >
         Open Map <ArrowRight size={12} />

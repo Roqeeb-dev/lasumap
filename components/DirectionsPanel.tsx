@@ -27,37 +27,35 @@ export default function DirectionsPanel({
     (b) => b.properties.id === destination,
   );
 
-  const selectClass =
-    "w-full text-sm px-3 py-2 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700";
-
   return (
-    <div className="absolute top-4 right-4 z-[1000] w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="absolute top-4 right-4 z-[1000] w-72 bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl shadow-black/10 border border-white/70 overflow-hidden flex flex-col max-h-[85vh]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100 shrink-0">
         <div className="flex items-center gap-2">
-          <Navigation size={15} className="text-blue-500" />
-          <span className="text-sm font-semibold text-gray-800">
+          <Navigation size={16} className="text-blue-500" />
+          <span className="text-sm font-semibold text-slate-900">
             Directions
           </span>
         </div>
         <button
           onClick={onClose}
-          className="text-gray-300 hover:text-gray-500 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-2xl hover:bg-slate-100 active:bg-slate-200 transition-colors text-slate-400 hover:text-slate-600"
         >
-          <X size={15} />
+          <X size={18} strokeWidth={3} />
         </button>
       </div>
 
       {/* Inputs */}
-      <div className="p-4 flex flex-col gap-3 shrink-0">
+      <div className="p-4 flex flex-col gap-4 shrink-0">
+        {/* From */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-gray-400 font-medium">From</label>
+          <label className="text-xs font-medium text-slate-500">From</label>
           <select
             value={origin}
             onChange={(e) => setOrigin(e.target.value)}
-            className={selectClass}
+            className="w-full text-sm px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 transition-all"
           >
-            <option value="">Select origin...</option>
+            <option value="">Select origin building...</option>
             {buildings.map((b) => (
               <option key={b.properties.id} value={b.properties.id}>
                 {b.properties.name}
@@ -66,20 +64,22 @@ export default function DirectionsPanel({
           </select>
         </div>
 
+        {/* Divider */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-px bg-gray-100" />
-          <ArrowRight size={12} className="text-gray-300" />
-          <div className="flex-1 h-px bg-gray-100" />
+          <div className="flex-1 h-px bg-slate-100" />
+          <ArrowRight size={14} className="text-slate-400" />
+          <div className="flex-1 h-px bg-slate-100" />
         </div>
 
+        {/* To */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-gray-400 font-medium">To</label>
+          <label className="text-xs font-medium text-slate-500">To</label>
           <select
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
-            className={selectClass}
+            className="w-full text-sm px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 transition-all"
           >
-            <option value="">Select destination...</option>
+            <option value="">Select destination building...</option>
             {buildings.map((b) => (
               <option key={b.properties.id} value={b.properties.id}>
                 {b.properties.name}
@@ -88,6 +88,7 @@ export default function DirectionsPanel({
           </select>
         </div>
 
+        {/* Get Directions Button */}
         <button
           onClick={() => {
             if (originFeature && destinationFeature) {
@@ -95,77 +96,75 @@ export default function DirectionsPanel({
             }
           }}
           disabled={!origin || !destination || loading}
-          className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50
-            disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors
-            flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm"
         >
           {loading ? (
             <>
-              <Loader2 size={14} className="animate-spin" />
-              Getting route...
+              <Loader2 size={16} className="animate-spin" />
+              Calculating route...
             </>
           ) : (
             <>
-              <Navigation size={14} />
+              <Navigation size={16} />
               Get Directions
             </>
           )}
         </button>
 
-        {/* Summary bar */}
+        {/* Route Summary */}
         {route && (
-          <div className="p-3 bg-blue-50 rounded-xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin size={13} className="text-blue-500" />
+          <div className="px-4 py-3 bg-blue-50/80 rounded-2xl flex items-center justify-between border border-blue-100">
+            <div className="flex items-center gap-3">
+              <MapPin size={15} className="text-blue-500" />
               <div>
-                <p className="text-xs font-semibold text-blue-700">
+                <p className="text-sm font-semibold text-blue-700">
                   {formatETA(route.duration)}
                 </p>
-                <p className="text-[10px] text-blue-400">
+                <p className="text-xs text-blue-400">
                   {formatDistance(route.distance)}
                 </p>
               </div>
             </div>
-            <span className="text-[10px] text-blue-400">
+            <span className="text-xs font-medium text-blue-500 bg-white px-3 py-1 rounded-xl shadow-sm">
               {route.steps.length} steps
             </span>
           </div>
         )}
       </div>
 
-      {/* Steps list — scrollable */}
+      {/* Steps List */}
       {route && route.steps.length > 0 && (
-        <div className="overflow-y-auto flex-1 border-t border-gray-100">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide px-4 pt-3 pb-1">
+        <div className="overflow-y-auto flex-1 border-t border-slate-100">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-4 pt-4 pb-2">
             Step by step
           </p>
-          <ul className="pb-4">
+          <ul className="px-4 pb-6 space-y-4">
             {route.steps.map((step, i) => {
               const isLast = i === route.steps.length - 1;
               return (
-                <li key={i} className="flex items-start gap-3 px-4 py-2">
+                <li key={i} className="flex items-start gap-3">
                   {/* Step indicator */}
-                  <div className="flex flex-col items-center shrink-0 mt-0.5">
+                  <div className="flex flex-col items-center shrink-0">
                     <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold
+                      className={`w-6 h-6 rounded-2xl flex items-center justify-center text-xs font-semibold transition-all
                         ${
                           isLast
                             ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-500"
+                            : "bg-slate-100 text-slate-500"
                         }`}
                     >
-                      {isLast ? <MapPin size={10} /> : i + 1}
+                      {isLast ? <MapPin size={13} /> : i + 1}
                     </div>
-                    {!isLast && <div className="w-px h-4 bg-gray-200 mt-1" />}
+                    {!isLast && <div className="w-px h-5 bg-slate-200 mt-1" />}
                   </div>
 
                   {/* Instruction */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-700 leading-snug">
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <p className="text-sm text-slate-700 leading-snug">
                       {step.instruction}
                     </p>
                     {step.distance > 0 && (
-                      <p className="text-[10px] text-gray-400 mt-0.5">
+                      <p className="text-xs text-slate-400 mt-1">
                         {formatDistance(step.distance)}
                       </p>
                     )}

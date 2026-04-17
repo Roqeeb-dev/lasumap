@@ -43,6 +43,7 @@ export default function Hero() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <Link
             href="/map"
+            prefetch
             className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-full bg-blue-500 hover:bg-blue-400 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
           >
             <Navigation size={15} />
