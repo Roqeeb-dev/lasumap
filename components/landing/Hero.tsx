@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col lg:flex-row items-center justify-center pt-24 lg:pt-0">
+    <section className="relative min-h-screen flex flex-col lg:flex-row items-center justify-center pt-24 lg:pt-22">
       {/* Background blur */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/20 rounded-full blur-[120px]" />
