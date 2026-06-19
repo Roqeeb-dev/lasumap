@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -44,8 +44,8 @@ export const metadata: Metadata = {
     "LASU buildings and locations",
   ],
 
-  authors: [{ name: "Roqeeb" }],
-  creator: "Roqeeb",
+  authors: [{ name: "Shafiriyu Roqeeb" }],
+  creator: "Shafiriyu Roqeeb",
   applicationName: "LASU Navigate",
 
   icons: {
@@ -78,15 +78,17 @@ export const metadata: Metadata = {
     description:
       "Navigate Lagos State University effortlessly. Discover buildings, routes, and facilities in seconds.",
     images: ["/og-image.png"],
-    creator: "Shafiriyu Roqeeb",
   },
 
   category: "education",
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({
@@ -97,9 +99,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col overflow-hidden">
+        {children}
+      </body>
     </html>
   );
 }
