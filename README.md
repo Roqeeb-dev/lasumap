@@ -79,8 +79,8 @@ lasu-navigate/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/lasu-navigate.git
-cd lasu-navigate
+git clone https://github.com/Roqeeb-dev/lasumap.git
+cd lasumap
 
 # Install dependencies
 npm install
