@@ -1,6 +1,7 @@
 export type RouteStep = {
   instruction: string;
-  distance: number; // metres
+  distance: number;
+  maneuverLocation?: [number, number];
 };
 
 export type RouteResult = {
@@ -24,12 +25,12 @@ export async function getRoute(
 
   const route = data.routes[0];
 
-  // Flatten all steps from all legs into one array
   const steps: RouteStep[] = route.legs
     .flatMap((leg: any) => leg.steps)
     .map((step: any) => ({
       instruction: step.maneuver.instruction,
       distance: step.distance,
+      maneuverLocation: step.maneuver.location as [number, number],
     }));
 
   return {
@@ -38,6 +39,23 @@ export async function getRoute(
     distance: route.distance,
     steps,
   };
+}
+
+// Exported so RouteLayer and useNavigation can both use it
+export function haversineDistance(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 export function formatETA(seconds: number): string {

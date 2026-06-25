@@ -13,6 +13,7 @@ interface DirectionsPanelProps {
   loading: boolean;
   onGetDirections: (origin: Feature, destination: Feature) => void;
   onClose: () => void;
+  onStartNavigation?: (destination: Feature) => void;
 }
 
 export default function DirectionsPanel({
@@ -21,6 +22,7 @@ export default function DirectionsPanel({
   loading,
   onGetDirections,
   onClose,
+  onStartNavigation,
 }: DirectionsPanelProps) {
   const [origin, setOrigin] = useState<string>("");
   const [destination, setDestination] = useState<string>("");
@@ -38,6 +40,14 @@ export default function DirectionsPanel({
   function handleSubmit() {
     if (originFeature && destinationFeature) {
       onGetDirections(originFeature, destinationFeature);
+    }
+  }
+
+  // Called when the user taps Start Navigation.
+  // Passes the resolved destination Feature up to MapComponent.
+  function handleStartNavigation() {
+    if (destinationFeature && onStartNavigation) {
+      onStartNavigation(destinationFeature);
     }
   }
 
@@ -61,6 +71,11 @@ export default function DirectionsPanel({
           destinationName={destinationFeature?.properties.name}
           route={route}
           onEdit={() => setEditing(true)}
+          onStartNavigation={
+            onStartNavigation && destinationFeature
+              ? handleStartNavigation
+              : undefined
+          }
         />
       )}
 
