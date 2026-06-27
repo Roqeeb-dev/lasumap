@@ -1,12 +1,13 @@
-import { ArrowRight, Pencil } from "lucide-react";
+import { ArrowRight, Pencil, Navigation } from "lucide-react";
 import type { RouteResult } from "@/lib/directions";
 import RouteSummaryCard from "./RouteSummaryCard";
 
-interface RouteHeaderCompactProps {
+interface RouteHeaderProps {
   originName?: string;
   destinationName?: string;
   route: RouteResult | null;
   onEdit: () => void;
+  onStartNavigation?: () => void;
 }
 
 export default function RouteHeader({
@@ -14,9 +15,11 @@ export default function RouteHeader({
   destinationName,
   route,
   onEdit,
-}: RouteHeaderCompactProps) {
+  onStartNavigation,
+}: RouteHeaderProps) {
   return (
     <div className="px-4 py-3 flex flex-col gap-3 shrink-0 border-b border-slate-100">
+      {/* Origin → Destination summary + edit button */}
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-slate-800 truncate">
@@ -36,7 +39,19 @@ export default function RouteHeader({
         </button>
       </div>
 
+      {/* ETA / distance badge */}
       {route && <RouteSummaryCard route={route} />}
+
+      {/* Start Navigation — only shown when a route is ready */}
+      {route && onStartNavigation && (
+        <button
+          onClick={onStartNavigation}
+          className="w-full py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm"
+        >
+          <Navigation size={15} />
+          Start Navigation
+        </button>
+      )}
     </div>
   );
 }
