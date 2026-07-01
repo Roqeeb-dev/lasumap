@@ -14,8 +14,8 @@ const landmarks = [
 
 export default function Landmarks() {
   return (
-    <section className="px-6 lg:px-16 py-20 border-t border-white/5">
-      <div className="max-w-5xl mx-auto">
+    <section className="px-6 lg:px-8 py-20 border-t border-white/5">
+      <div className="max-w-6xl mx-auto">
         <p className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
           Key locations
         </p>

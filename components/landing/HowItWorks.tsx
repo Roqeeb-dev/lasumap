@@ -22,13 +22,13 @@ export const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="relative px-6 lg:px-16 py-24">
-      <div className="max-w-5xl mx-auto">
+    <section id="how-it-works" className="relative px-6 lg:px-8 py-24">
+      <div className="max-w-6xl mx-auto">
         <p className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
           How it works
         </p>
         <h2
-          className="text-3xl lg:text-4xl font-bold mb-12 max-w-md"
+          className="text-3xl lg:text-4xl font-bold mb-12 max-w-lg"
           style={{ fontFamily: "var(--font-syne, sans-serif)" }}
         >
           Navigate LASU without confusion
