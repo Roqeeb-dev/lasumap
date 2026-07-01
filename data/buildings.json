@@ -676,6 +676,146 @@
         "category": "facility",
         "description": "Administrative building handling student welfare and services"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1999947, 6.4735945] },
+      "properties": {
+        "id": "faculty-of-computing",
+        "name": "Faculty of Computing",
+        "category": "faculty",
+        "description": "The new Faculty of Computing and Information Technologies"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1999062, 6.4742798] },
+      "properties": {
+        "id": "rd-school-of-transportation",
+        "name": "Road to School of Transportation",
+        "category": "landmark",
+        "description": "The Junction opposite CBT centre that leads to school of transportation"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1997335, 6.4741882] },
+      "properties": {
+        "id": "atm-wema",
+        "name": "ATM (WEMA Bank)",
+        "category": "facility",
+        "description": "WEMA Bank ATM on campus"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1994831, 6.4742105] },
+      "properties": {
+        "id": "femi-gbajabiamila-conference-center",
+        "name": "Femi Gbajabiamila Conference Center",
+        "category": "landmark",
+        "description": "Femi Gbajabiamila Conference Center for events"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1992631, 6.4741755] },
+      "properties": {
+        "id": "laundromat",
+        "name": "Laundromat",
+        "category": "facility",
+        "description": "On-campus laundry facility"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1981393, 6.4738677] },
+      "properties": {
+        "id": "school-of-transportation",
+        "name": "School of Transportation",
+        "category": "school",
+        "description": "School of transportation buildings and facilities"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.197687, 6.4735732] },
+      "properties": {
+        "id": "ent",
+        "name": "ENT Building",
+        "category": "facility",
+        "description": "The building for Enterpreneurship activities"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1984595, 6.4745766] },
+      "properties": {
+        "id": "fss-market",
+        "name": "FSS Market",
+        "category": "restaurant",
+        "description": "Food market serving the Faculty of Social Sciences area"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1993148, 6.4752879] },
+      "properties": {
+        "id": "faculty-of-social-science",
+        "name": "Faculty of Social Sciences",
+        "category": "faculty",
+        "description": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.1991545, 6.4763792] },
+      "properties": {
+        "id": "stem-education-laboratory",
+        "name": "STEM Education Laboratory",
+        "category": "facility",
+        "description": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.199699, 6.4756506] },
+      "properties": {
+        "id": "faculty-of-management-science",
+        "name": "Faculty of Management Sciences",
+        "category": "faculty",
+        "description": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.2003843, 6.4748851] },
+      "properties": {
+        "id": "fms-market",
+        "name": "FMS Market",
+        "category": "restaurant",
+        "description": "Food market serving the Faculty of Management Sciences area"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [0, 0] },
+      "properties": {
+        "id": "cbt-center",
+        "name": "CBT Center",
+        "category": "facility",
+        "description": "Computer-Based Test center for examinations"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.2011196, 6.4747362] },
+      "properties": {
+        "id": "atm-providus",
+        "name": "ATM (Providus Bank)",
+        "category": "facility",
+        "description": "Providus Bank ATM on campus"
+      }
     }
   ]
 }
