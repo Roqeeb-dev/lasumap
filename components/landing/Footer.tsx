@@ -10,9 +10,13 @@ export default function Footer() {
           <div className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center">
             <MapPin size={10} fill="white" className="text-white" />
           </div>
-          <span className="text-xs text-white/30">LASU Navigate · Final Year Project</span>
+          <span className="text-xs text-white/30">
+            LASU Navigate · Final Year Project
+          </span>
         </div>
-        <span className="text-xs text-white/20">Lagos State University, Ojo</span>
+        <span className="text-xs text-white/20">
+          Lagos State University, Ojo
+        </span>
       </div>
     </footer>
   );
