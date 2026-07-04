@@ -22,7 +22,7 @@ export default function Problem() {
           style={{ color: "var(--clr-text-60)" }}
         >
           <p>You are new on campus.</p>
-          <p>You need the Faculty of Engineering.</p>
+          <p>You need the Faculty of Science.</p>
           <p>You ask three people.</p>
           <p
             className="font-extrabold"
