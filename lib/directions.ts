@@ -41,7 +41,6 @@ export async function getRoute(
   };
 }
 
-// Exported so RouteLayer and useNavigation can both use it
 export function haversineDistance(
   lat1: number,
   lng1: number,

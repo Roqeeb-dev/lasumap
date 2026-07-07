@@ -2,7 +2,7 @@
 import Map, { Marker, Popup, NavigationControl } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import buildings from "@/data/buildings.json";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import BuildingPopup from "@/components/BuildingPopup";
@@ -15,32 +15,38 @@ import type { Feature } from "@/types/buildings";
 import type { MapRef } from "react-map-gl/mapbox";
 import { MapPin, Navigation } from "lucide-react";
 import { getRoute } from "@/lib/directions";
-import type { RouteResult } from "@/lib/directions";
-
-type SelectedBuilding = Feature | null;
+import { useMapStore } from "@/store/mapStore";
 
 export default function MapComponent() {
   const mapRef = useRef<MapRef>(null);
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [selected, setSelected] = useState<SelectedBuilding>(null);
-  const [userPosition, setUserPosition] = useState<[number, number] | null>(
-    null,
-  );
   const [locating, setLocating] = useState(false);
   const [showDirections, setShowDirections] = useState(false);
-  const [route, setRoute] = useState<RouteResult | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
 
   const {
-    navigating,
+    selectedBuilding,
+    activeCategory,
+    userPosition,
+    route,
+    navigating: storeNavigating,
+    setSelectedBuilding,
+    setActiveCategory,
+    setUserPosition,
+    setRoute,
+    setNavigating,
+    setGpsStatus,
+    setLocateFn,
+    setStartNavigationFn,
+  } = useMapStore();
+
+  const {
+    navigating: hookNavigating,
     currentStep,
     navDestination,
     startNavigation,
     stopNavigation,
   } = useNavigation({
-    // Called on every GPS update while navigating.
-    // Updates the user dot and smoothly tracks the map on them.
     onPositionUpdate: (lng, lat) => {
       setUserPosition([lng, lat]);
       mapRef.current?.easeTo({ center: [lng, lat], duration: 500 });
@@ -49,6 +55,17 @@ export default function MapComponent() {
       setRoute(null);
     },
   });
+
+  useEffect(() => {
+    setNavigating(hookNavigating);
+  }, [hookNavigating, setNavigating]);
+
+  useEffect(() => {
+    setLocateFn(() => handleLocate);
+    setStartNavigationFn((destination: Feature) =>
+      handleStartNavigation(destination),
+    );
+  }, [setLocateFn, setStartNavigationFn]);
 
   const visibleFeatures = buildings.features.filter((f) =>
     activeCategory === "all" ? true : f.properties.category === activeCategory,
@@ -69,23 +86,27 @@ export default function MapComponent() {
     setActiveCategory("all");
     setQuery("");
     flyTo(lng, lat);
-    setTimeout(() => setSelected(feature), 1300);
+    setTimeout(() => setSelectedBuilding(feature), 1300);
   }
 
   function handleLocate() {
     if (!navigator.geolocation) {
+      setGpsStatus("off");
       alert("Geolocation is not supported by your browser.");
       return;
     }
+
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
+        setGpsStatus("active");
         setUserPosition([longitude, latitude]);
         flyTo(longitude, latitude);
         setLocating(false);
       },
       (err) => {
+        setGpsStatus("weak");
         console.error("Geolocation error:", err.code, err.message);
         alert(
           "Could not get your location. Please allow location access and try again.",
@@ -132,26 +153,29 @@ export default function MapComponent() {
     }
   }
 
-  // Called when the user taps Start Navigation in the directions panel.
-  // Closes the panel, flies to the user's position, and kicks off the watch loop.
   function handleStartNavigation(destination: Feature) {
-    if (!route) return;
+    const currentRoute = useMapStore.getState().route;
+    if (!currentRoute) return;
     setShowDirections(false);
 
-    // If we already have the user's position, centre on them first
-    if (userPosition) {
-      mapRef.current?.flyTo({ center: userPosition, zoom: 18, duration: 800 });
+    const currentUserPosition = useMapStore.getState().userPosition;
+    if (currentUserPosition) {
+      mapRef.current?.flyTo({
+        center: currentUserPosition,
+        zoom: 18,
+        duration: 800,
+      });
     }
 
-    startNavigation(destination, route);
+    startNavigation(destination, currentRoute);
   }
 
-  // Stops navigation and resets back to the normal map view
   function handleStopNavigation() {
     stopNavigation();
     setRoute(null);
   }
 
+  const activeNavigation = hookNavigating || storeNavigating;
   const routeCoordinates = route
     ? (route.geometry.coordinates as [number, number][])
     : [];
@@ -159,7 +183,7 @@ export default function MapComponent() {
   return (
     <div className="relative h-full w-full">
       {/* Hide search / filter / buttons during active navigation to keep UI clean */}
-      {!navigating && (
+      {!activeNavigation && (
         <>
           <SearchBar
             query={query}
@@ -187,7 +211,7 @@ export default function MapComponent() {
       )}
 
       {/* Directions panel — hidden once navigation starts */}
-      {showDirections && !navigating && (
+      {showDirections && !activeNavigation && (
         <DirectionsPanel
           buildings={buildings.features as Feature[]}
           route={route}
@@ -202,7 +226,7 @@ export default function MapComponent() {
       )}
 
       {/* Floating instruction banner — only shown during navigation */}
-      {navigating && route && navDestination && (
+      {activeNavigation && route && navDestination && (
         <NavigationBanner
           steps={route.steps}
           currentStep={currentStep}
@@ -225,7 +249,7 @@ export default function MapComponent() {
           <RouteLayer
             coordinates={routeCoordinates}
             userPosition={userPosition}
-            navigating={navigating}
+            navigating={activeNavigation}
           />
         )}
 
@@ -241,7 +265,7 @@ export default function MapComponent() {
         )}
 
         {/* Building markers — hidden during navigation to reduce clutter */}
-        {!navigating &&
+        {!activeNavigation &&
           visibleFeatures.map((f) => (
             <Marker
               key={f.properties.id}
@@ -250,7 +274,7 @@ export default function MapComponent() {
               anchor="bottom"
               onClick={(e) => {
                 e.originalEvent.stopPropagation();
-                setSelected(f as Feature);
+                setSelectedBuilding(f as Feature);
               }}
             >
               <MapPin
@@ -262,20 +286,20 @@ export default function MapComponent() {
           ))}
 
         {/* Building popup */}
-        {selected && (
+        {selectedBuilding && (
           <Popup
-            longitude={selected.geometry.coordinates[0]}
-            latitude={selected.geometry.coordinates[1]}
+            longitude={selectedBuilding.geometry.coordinates[0]}
+            latitude={selectedBuilding.geometry.coordinates[1]}
             anchor="top"
             offset={10}
-            onClose={() => setSelected(null)}
+            onClose={() => setSelectedBuilding(null)}
             closeButton={true}
             closeOnClick={false}
           >
             <BuildingPopup
-              name={selected.properties.name}
-              description={selected.properties.description}
-              category={selected.properties.category}
+              name={selectedBuilding.properties.name}
+              description={selectedBuilding.properties.description}
+              category={selectedBuilding.properties.category}
             />
           </Popup>
         )}
